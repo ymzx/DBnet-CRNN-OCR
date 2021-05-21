@@ -12,6 +12,8 @@ from ppocr.utils.log import get_logger
 import uuid
 import os,time
 
+###
+
 logger = get_logger()
 
 api = Api(version='2.0.0', title='算法API', description='A4文档字符识别',default='Paddle-based OCR',default_label='v2.0')
