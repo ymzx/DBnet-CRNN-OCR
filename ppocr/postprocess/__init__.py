@@ -38,7 +38,6 @@ def build_post_process(config, global_config=None):
     module_name = config.pop('name')
     if global_config is not None:
         config.update(global_config)
-    assert module_name in support_dict, Exception(
-        'post process only support {}'.format(support_dict))
+    assert module_name in support_dict, Exception('post process only support {}'.format(support_dict))
     module_class = eval(module_name)(**config)
     return module_class

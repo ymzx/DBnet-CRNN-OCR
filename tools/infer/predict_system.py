@@ -93,7 +93,13 @@ class TextSystem(object):
 
     def __call__(self, img):
         ori_im = img.copy()
-        dt_boxes, elapse = self.text_detector(img)
+        h,w,_=img.shape
+        # 默认边长小于32像素的为单行，如果边长小于32且为多行，ocr无法检测，导致识别失败
+        # 此处为这种方案，减小小图片输入，检测算法不准确的影响
+        if h<32 or w<32:
+            dt_boxes, elapse = np.array([[[0,0],[w,0],[w,h],[0,h]]]),0.001
+        else:
+            dt_boxes, elapse = self.text_detector(img)
         logger.info("dt_boxes num : {}, elapse : {}".format(len(dt_boxes), elapse))
         if dt_boxes is None: return None, None, None, None
         if len(dt_boxes)==0: return None, None, None, None

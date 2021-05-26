@@ -78,10 +78,8 @@ class NormalizeImage(object):
         img = data['image']
         from PIL import Image
         if isinstance(img, Image.Image): img = np.array(img)
-
         assert isinstance(img, np.ndarray), "invalid input 'img' in NormalizeImage"
-        data['image'] = (
-            img.astype('float32') * self.scale - self.mean) / self.std
+        data['image'] = (img.astype('float32') * self.scale - self.mean) / self.std
         return data
 
 
@@ -111,6 +109,16 @@ class KeepKeys(object):
             data_list.append(data[key])
         return data_list
 
+
+def input_img_pad(img):
+    h, w, _ = img.shape
+    delta_h, delta_w = 0, 0
+    if h<32:
+        delta_h = 32-h
+    if w<32:
+        delta_w = 32-w
+    img = np.pad(img, ((0,delta_h),(0,delta_w),(0,0)), 'constant', constant_values=(255, 255))
+    return img
 
 class DetResizeForTest(object):
     def __init__(self, **kwargs):
@@ -156,6 +164,7 @@ class DetResizeForTest(object):
         # return img, np.array([ori_h, ori_w])
         return img, [ratio_h, ratio_w]
 
+
     def resize_image_type0(self, img):
         """
         resize image to a size multiple of 32 which is required by the network
@@ -185,7 +194,12 @@ class DetResizeForTest(object):
                 ratio = 1.
         resize_h = int(h * ratio)
         resize_w = int(w * ratio)
+        # pad边长为32整数倍,否则程序异常, update by djw 20210526
+        if resize_h<32 or resize_w<32:
+            img = input_img_pad(img)
+            resize_h, resize_w, _ = img.shape
 
+        # 必须是32整数倍，否则检测模型异常退出，该现象win上已验证,linux待验证
         resize_h = int(round(resize_h / 32) * 32)
         resize_w = int(round(resize_w / 32) * 32)
 

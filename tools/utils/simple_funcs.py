@@ -18,6 +18,9 @@ def ocr_format_convert(result,det=True, rec=False):
             elif det and rec:
                 position, text_score, chars_position, chars_score = line
                 text, score = text_score
+            elif not det and rec:
+                text, score = line
+                position=[] # ?
             # 转为思贤ocr格式
             temp['characters'] = []
             temp['score'] = round(float(score),3)
@@ -207,14 +210,12 @@ def parse_char_pos_score(img_list, input_img_list, rec_result, rec_label, rec_pr
     imgs_frs_pixel = [w/imgs_frs[i] for i,(h,w,c) in enumerate(input_imgs_hwc)] # 约4pixel/帧
     for i, label in enumerate(rec_label):
         # chars_start_end用于求位置；label_idx用于求置信度
-        # if rec_result[i][0]!= '登记机关': continue
         chars_start_end, label_idx = find_char_start_end_fr(label)
         # print('-------')
         # print('chars_start_end',len(chars_start_end), chars_start_end)
         # print(chars_start_end)
         # print('label', label)
         rsz_h, rsz_w, pd_pixel = rec_rsz_pd[i]
-        # print('imgs_hwc', imgs_hwc[i], input_imgs_hwc[i], len(label), imgs_frs_pixel[i], rsz_w, pd_pixel)
         input_src_h_ratio = rsz_h / imgs_hwc[i][0]
         input_src_w_ratio = rsz_w / imgs_hwc[i][1]
         rec_points = []
@@ -235,16 +236,11 @@ def parse_char_pos_score(img_list, input_img_list, rec_result, rec_label, rec_pr
             # 计算字符cof
             frs_cof = [rec_prob[i][idx] for idx in label_idx[j][1]]
             rec_conf.append(round(sum(frs_cof)/len(frs_cof),3))
-        # print('input_points', input_points)
-        # print('rec_points', rec_points)
         assert len(rec_points)==len(chars_start_end) # 一一对应
         chars_info['chars_position'].append(rec_points)
         chars_info['block_hw'].append([imgs_hwc[i][0], imgs_hwc[i][1]])
         chars_info['text'].append(rec_result[i][0])
         chars_info['score'].append(rec_conf)
-    # print('rec_result',rec_result)
-    # print('imgs_hwc', imgs_hwc)
-    # print('chars_info', chars_info)
     return chars_info
 
 def amend_line_chars_pos(line_chars, line_box):

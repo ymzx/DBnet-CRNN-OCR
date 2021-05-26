@@ -158,7 +158,6 @@ class TextDetector(object):
         shape_list = np.expand_dims(shape_list, axis=0)
         img = img.copy()
         starttime = time.time()
-
         self.input_tensor.copy_from_cpu(img)
         self.predictor.run()
         outputs = []
@@ -185,6 +184,7 @@ class TextDetector(object):
             raise NotImplementedError
         post_result = self.postprocess_op(preds, shape_list) # 出现box丢失
         dt_boxes = post_result[0]['points']
+        print('dt_boxes', dt_boxes)
         if self.det_algorithm == "SAST" and self.det_sast_polygon:
             dt_boxes = self.filter_tag_det_res_only_clip(dt_boxes, ori_im.shape)
         else:
